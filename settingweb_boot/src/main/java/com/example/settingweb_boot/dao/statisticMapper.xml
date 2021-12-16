@@ -5,10 +5,55 @@
     
 <mapper namespace="com.example.settingweb_boot.dao.StatisticMapper">
  
+ 	<!-- 년별 -->
     <select id="selectYearLogin" parameterType="string" resultType="hashMap">
         select count(*) as totCnt
         from statistc.requestinfo ri
-        where left(ri.createDate, 2) = #{year};
+        where left(ri.createDate, 2) = #{year}
+        and ri.requestCode = 'L';
+    </select>
+    
+    <!-- 월별 -->
+    <select id="selectMonthLogin" parameterType="string" resultType="hashMap">
+        select count(*) as totCnt
+        from statistc.requestinfo ri
+        where mid(ri.createDate, 3, 2) = #{month}
+        and ri.requestCode = 'L';
+    </select>
+    
+     <!-- 일별 -->
+    <select id="selectDayLogin" parameterType="string" resultType="hashMap">
+        select count(*) as totCnt
+        from statistc.requestinfo ri
+        where mid(ri.createDate, 5, 2) = #{day}
+        and ri.requestCode = 'L';
+    </select>
+    
+     <!-- 평균 하루 로그인 횟수 -->
+    <select id="selectAverageDayLogin" resultType="hashMap">
+        select CONCAT('20', mid(ri.createDate, 1, 2),  '-', mid(ri.createDate, 3, 2)) yd,
+        			count(*) / (DATEDIFF(LAST_DAY(CONCAT('20', mid(ri.createDate, 1, 2), '-', mid(ri.createDate, 3, 2), '-01')),
+        			CONCAT('20', mid(ri.createDate, 1, 2), '-', mid(ri.createDate, 3, 2), '-01')) + 1) as totAverage
+        from statistc.requestinfo ri
+        where ri.requestCode = 'L'
+        group by yd;
+    </select>
+    
+     <!-- 공휴일 제외 -->
+    <select id="selectExceptHolidayLogin" resultType="hashMap">
+        select count(*) as totCnt
+        from statistc.requestinfo ri
+        where mid(ri.createDate, 5, 2) = #{day}
+        and ri.requestCode = 'L';
+    </select>
+    
+     <!-- 부서별 -->
+    <select id="selectOrganizationMonthLogin" parameterType="string" resultType="hashMap">
+        select count(*) as totCnt
+        from statistc.requestinfo ri INNER JOIN statistc.user usr ON (ri.userID = usr.userID)
+        where mid(ri.createDate, 3, 2) = #{month}
+        and usr.HR_ORGAN = #{organ}
+        and ri.requestCode = 'L';
     </select>
     
 </mapper>
